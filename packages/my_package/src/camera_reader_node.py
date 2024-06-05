@@ -27,46 +27,65 @@ class CameraReaderNode(DTROS):
         self.sub = rospy.Subscriber(self._camera_topic, CompressedImage, self.callback)
         self.publisherNode = rospy.Publisher("Camera", Float64, queue_size=1)
 
-    def detect_red(self, img):
+    import cv2
 
-        # Define lower and upper bounds for red color in HSV space
-        lower_red = np.array([170, 100, 100])
-        upper_red = np.array([180, 255, 255])
+    def detect_red_line(self, image):
+        # Read the image
 
-        # Convert the image to HSV color space
-        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # Convert image to HSV color space
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # Create a mask for red color
-        mask = cv2.inRange(img_hsv, lower_red, upper_red)
+        # Define lower and upper bounds for red color detection
+        lower_red = np.array([0, 100, 100])
+        upper_red = np.array([10, 255, 255])
 
-        # Apply morphological operations to remove noise (optional)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        # Mask image to only get red regions
+        mask = cv2.inRange(hsv, lower_red, upper_red)
 
-        # Find contours of red objects
+        # Find contours in the mask
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Check for red pixels (optional)
-        red_detected = False
-        if len(contours) > 0:
-            red_detected = True  # At least one red contour found
+        # Initialize total pixels and red pixels
+        total_pixels = mask.shape[0] * mask.shape[1]
+        red_pixels = 0
 
-        # Draw rectangles around detected objects (optional)
-        for cnt in contours:
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        # Iterate through contours and draw them on the original image
+        for contour in contours:
+            cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)
+            # Count red pixels
+            red_pixels += cv2.contourArea(contour)
+
+        # Calculate percentage of red pixels
+        red_percentage = (red_pixels / total_pixels) * 100
 
 
-        return img, red_detected
+        return image, red_percentage
+
+    def remove_top_portion(self, image, ratio=2 / 3):
+        """
+        Removes the top portion of an image based on a ratio.
+
+        Args:
+            image: A numpy array representing the image data.
+            ratio: Ratio of the top portion to remove (default: 2/3).
+
+        Returns:
+            A new image with the top portion removed.
+        """
+        # Get image height
+        height = image.shape[0]
+
+        # Calculate the number of rows to remove from the top
+        rows_to_remove = int(height * ratio)
+
+        return image[rows_to_remove:, :]
 
     def callback(self, msg):
         # convert JPEG bytes to CV image
         image = self._bridge.compressed_imgmsg_to_cv2(msg)
         # display frame
-        redness, detected = self.detect_red(image)
-        if detected:
-            self.publisherNode.publish(1.1)
+        redness,percentage = self.detect_red_line(self.remove_top_portion(image))
+        self.publisherNode.publish(percentage)
         cv2.imshow(self._window, redness)
 
         cv2.waitKey(1)

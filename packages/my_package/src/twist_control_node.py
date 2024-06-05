@@ -10,7 +10,7 @@ from std_msgs.msg import Float64
 
 # Twist command for controlling the linear and angular velocity of the frame
 VELOCITY = 0.3  # linear vel    , in m/s    , forward (+)
-OMEGA = 0   # angular vel   , rad/s     , counter clock wise (+)
+OMEGA = 0  # angular vel   , rad/s     , counter clock wise (+)
 
 
 class TwistControlNode(DTROS):
@@ -29,18 +29,22 @@ class TwistControlNode(DTROS):
         self.subscriber = rospy.Subscriber("Camera", Float64, self.receive_data)
 
 
-    def receive_data(self,data):
-        self.on_shutdown()
+    def receive_data(self, percentage):
+        print(percentage.data)
+        if percentage.data >= 20:
+
+            self.on_shutdown()
     def run(self):
         # publish 10 messages every second (10 Hz)
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(1)
         message = Twist2DStamped(v=self._v, omega=self._omega)
         while not rospy.is_shutdown():
             self._publisher.publish(message)
             rate.sleep()
 
     def on_shutdown(self):
-        stop = Twist2DStamped(v=0.0, omega=0.0)
+        self._v = self._v * 0.5
+        stop = Twist2DStamped(v=self._v, omega=0.0)
         self._publisher.publish(stop)
 
 if __name__ == '__main__':
