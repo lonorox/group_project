@@ -27,6 +27,8 @@ class WheelControlNode(DTROS):
         # construct publisher
         self._publisher = rospy.Publisher(wheels_topic, WheelsCmdStamped, queue_size=1)
 
+
+
     def run(self):
         # publish 10 messages every second (10 Hz)
         rate = rospy.Rate(0.1)
@@ -44,5 +46,6 @@ if __name__ == '__main__':
     node = WheelControlNode(node_name='wheel_control_node')
     # run node
     node.run()
+
     # keep the process from terminating
     rospy.spin()

@@ -4,11 +4,13 @@ import os
 import rospy
 from duckietown.dtros import DTROS, NodeType
 from duckietown_msgs.msg import Twist2DStamped
+from std_msgs.msg import Float64
+
 
 
 # Twist command for controlling the linear and angular velocity of the frame
 VELOCITY = 0.3  # linear vel    , in m/s    , forward (+)
-OMEGA = 4.0     # angular vel   , rad/s     , counter clock wise (+)
+OMEGA = 0   # angular vel   , rad/s     , counter clock wise (+)
 
 
 class TwistControlNode(DTROS):
@@ -24,7 +26,11 @@ class TwistControlNode(DTROS):
         self._omega = OMEGA
         # construct publisher
         self._publisher = rospy.Publisher(twist_topic, Twist2DStamped, queue_size=1)
+        self.subscriber = rospy.Subscriber("Camera", Float64, self.receive_data)
 
+
+    def receive_data(self,data):
+        self.on_shutdown()
     def run(self):
         # publish 10 messages every second (10 Hz)
         rate = rospy.Rate(10)
@@ -40,6 +46,7 @@ class TwistControlNode(DTROS):
 if __name__ == '__main__':
     # create the node
     node = TwistControlNode(node_name='twist_control_node')
+
     # run node
     node.run()
     # keep the process from terminating
