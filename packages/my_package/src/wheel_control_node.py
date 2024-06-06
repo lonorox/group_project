@@ -7,10 +7,10 @@ from duckietown_msgs.msg import WheelsCmdStamped
 
 
 # throttle and direction for each wheel
-THROTTLE_LEFT = 0.5        # 50% throttle
-DIRECTION_LEFT = 1         # forward
-THROTTLE_RIGHT = 0.3       # 30% throttle
-DIRECTION_RIGHT = -1       # backward
+THROTTLE_LEFT = 0        # 50% throttle
+DIRECTION_LEFT = 0         # forward
+THROTTLE_RIGHT = 0       # 30% throttle
+DIRECTION_RIGHT = 0       # backward
 
 
 class WheelControlNode(DTROS):

@@ -10,7 +10,7 @@ from std_msgs.msg import Float64
 
 # Twist command for controlling the linear and angular velocity of the frame
 VELOCITY = 0.2  # linear vel    , in m/s    , forward (+)
-OMEGA = 0  # angular vel   , rad/s     , counter clock wise (+)
+OMEGA = -0.65  # angular vel   , rad/s     , counter clock wise (+)
 
 
 class TwistControlNode(DTROS):
@@ -24,14 +24,25 @@ class TwistControlNode(DTROS):
         # form the message
         self._v = VELOCITY
         self._omega = OMEGA
+        self._stop = False
+        self.stop_time = rospy.Time.now() + rospy.Duration(2)
+        rospy.Timer(rospy.Duration(1), self.check_timer)
+        self.continue_timer = rospy.Time.now()
         # construct publisher
         self._publisher = rospy.Publisher(twist_topic, Twist2DStamped, queue_size=1)
         self.subscriber = rospy.Subscriber("Camera", Float64, self.receive_data)
 
+    def check_timer(self, event):
+        # Check if current time is past the stop time
+        if rospy.Time.now() > self.stop_time:
+            self.should_stop = True
+
+    
+
 
     def receive_data(self, percentage):
         # print(percentage.data)
-        print(self._v * 10)
+        # print(self._v * 10)
         if percentage.data >= 1:
             self.on_shutdown()
     def run(self):
@@ -42,10 +53,31 @@ class TwistControlNode(DTROS):
             self._publisher.publish(message)
             rate.sleep()
 
+    def restart(self):
+
+        return
+
     def on_shutdown(self):
-        self._v = self._v * 0.92
-        stop = Twist2DStamped(v=self._v, omega=0.0)
-        self._publisher.publish(stop)
+        if self._stop == True and rospy.Time.now() > self.stop_time:
+            self._v = 0.4 
+            self._omega = -3.5
+            self._stop = False
+            self.stop_time = rospy.Time.now() + rospy.Duration(2)
+            self.continue_timer = rospy.Time.now() + rospy.Duration(1)
+            print("stopped")
+
+        else:
+            if rospy.Time.now() > self.continue_timer:
+                self._v = self._v * 0.92
+            stop = Twist2DStamped(v=self._v, omega= self._omega)
+            self._publisher.publish(stop)
+            if self._v < 0.01:
+                if not self._stop:
+                    self.stop_time = rospy.Time.now() + rospy.Duration(2)
+                self._stop = True
+                # print(self.stop_time)
+                # print(rospy.Time.now())
+
 
 if __name__ == '__main__':
     # create the node
