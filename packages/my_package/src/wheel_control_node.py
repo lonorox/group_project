@@ -44,7 +44,12 @@ class WheelControlNode(DTROS):
         self._publisher.publish(stop)
 
     def receive_data(self,percentageYellow,percentageWhite):
-        return 1
+        if percentageWhite > percentageYellow:
+            DIRECTION_LEFT = -1
+            DIRECTION_RIGHT = -1
+        else:
+            DIRECTION_LEFT = 1
+            DIRECTION_RIGHT = 1
 
 if __name__ == '__main__':
     # create the node

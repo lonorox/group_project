@@ -105,7 +105,7 @@ class CameraReaderNode(DTROS):
         black_background = np.zeros_like(image)
 
         # Apply the mask to the black background instead of the original image
-        detected_image = cv2.bitwise_and(image, image, mask=mask)
+        detected_image = cv2.bitwise_and(black_background, black_background, mask=mask)
 
         # Initialize total pixels and red pixelstarget_pixel_count = 
         total_pixels = mask.shape[0] * mask.shape[1]
@@ -138,7 +138,7 @@ class CameraReaderNode(DTROS):
         black_background = np.zeros_like(image)
 
         # Apply the mask to the black background instead of the original image
-        detected_image = cv2.bitwise_and(image, image, mask=mask)
+        detected_image = cv2.bitwise_and(black_background, black_background, mask=mask)
 
         # Initialize total pixels and red pixelstarget_pixel_count = 
         total_pixels = mask.shape[0] * mask.shape[1]
@@ -164,7 +164,8 @@ class CameraReaderNode(DTROS):
         self.publisherNodeWhite.publish(percWhite)
         print(percYellow)
         cv2.imshow(self._window, yellow)
-
+        cv2.waitKey(1)
+        cv2.imshow(self._window, white)
         cv2.waitKey(1)
 
 if __name__ == '__main__':
