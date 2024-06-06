@@ -4,7 +4,7 @@ import os
 import rospy
 from duckietown.dtros import DTROS, NodeType
 from duckietown_msgs.msg import WheelsCmdStamped
-
+from std_msgs.msg import Float64
 
 # throttle and direction for each wheel
 THROTTLE_LEFT = 0        # 50% throttle
@@ -26,6 +26,8 @@ class WheelControlNode(DTROS):
         self._vel_right = THROTTLE_RIGHT * DIRECTION_RIGHT
         # construct publisher
         self._publisher = rospy.Publisher(wheels_topic, WheelsCmdStamped, queue_size=1)
+        self.subscriber = rospy.Subscriber("Yellow", Float64, self.receive_data)
+        self.subscriber = rospy.Subscriber("White", Float64, self.receive_data)
 
 
 
@@ -40,6 +42,9 @@ class WheelControlNode(DTROS):
     def on_shutdown(self):
         stop = WheelsCmdStamped(vel_left=0, vel_right=0)
         self._publisher.publish(stop)
+
+    def receive_data(self):
+        return 1
 
 if __name__ == '__main__':
     # create the node
