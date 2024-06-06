@@ -97,25 +97,26 @@ class CameraReaderNode(DTROS):
         # Mask image to only get red regions
         mask = cv2.inRange(hsv, lower_white, upper_white)
 
-
         # Find contours in the mask
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Create a mask to identify pixels within the specified HSV range
 
-        # Initialize total pixels and red pixels
+        # Apply the mask to get the image with only the target color
+
+        black_background = np.zeros_like(image)
+
+        # Apply the mask to the black background instead of the original image
+        detected_image = cv2.bitwise_and(image, image, mask=mask)
+
+        # Initialize total pixels and red pixelstarget_pixel_count = 
         total_pixels = mask.shape[0] * mask.shape[1]
-        red_pixels = 0
+        white_pixels = np.sum(mask)
 
-        # Iterate through contours and draw them on the original image
-        for contour in contours:
-            cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)
-            # Count red pixels
-            red_pixels += cv2.contourArea(contour)
 
         # Calculate percentage of red pixels
-        red_percentage = (red_pixels / total_pixels) * 100
+        white_percentage = (white_pixels / total_pixels) * 100
 
 
-        return image, red_percentage
+        return detected_image, white_percentage
     def detect_yellow_line(self, image):
         # Read the image
 
@@ -141,14 +142,14 @@ class CameraReaderNode(DTROS):
 
         # Initialize total pixels and red pixelstarget_pixel_count = 
         total_pixels = mask.shape[0] * mask.shape[1]
-        red_pixels = np.sum(mask)
+        yell_pixels = np.sum(mask)
 
 
         # Calculate percentage of red pixels
-        red_percentage = (red_pixels / total_pixels) * 100
+        yellow_percentage = (yell_pixels / total_pixels) * 100
 
 
-        return detected_image, red_percentage
+        return detected_image, yellow_percentage
 
 
     def callback(self, msg):

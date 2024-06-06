@@ -7,9 +7,9 @@ from duckietown_msgs.msg import WheelsCmdStamped
 from std_msgs.msg import Float64
 
 # throttle and direction for each wheel
-THROTTLE_LEFT = 0        # 50% throttle
-DIRECTION_LEFT = 0         # forward
-THROTTLE_RIGHT = 0       # 30% throttle
+THROTTLE_LEFT = 0.5     # 50% throttle
+DIRECTION_LEFT = 0       # forward
+THROTTLE_RIGHT = 0.5      # 30% throttle
 DIRECTION_RIGHT = 0       # backward
 
 
@@ -43,7 +43,7 @@ class WheelControlNode(DTROS):
         stop = WheelsCmdStamped(vel_left=0, vel_right=0)
         self._publisher.publish(stop)
 
-    def receive_data(self):
+    def receive_data(self,percentageYellow,percentageWhite):
         return 1
 
 if __name__ == '__main__':
