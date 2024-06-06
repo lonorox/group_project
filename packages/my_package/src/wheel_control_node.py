@@ -26,8 +26,9 @@ class WheelControlNode(DTROS):
         self._vel_right = THROTTLE_RIGHT * DIRECTION_RIGHT
         # construct publisher
         self._publisher = rospy.Publisher(wheels_topic, WheelsCmdStamped, queue_size=1)
-        self.subscriber = rospy.Subscriber("Yellow", Float64, self.receive_data)
-        self.subscriber = rospy.Subscriber("White", Float64, self.receive_data)
+        self.subscriber = rospy.Subscriber("Yellow", Float64, self.receive_yellow)
+        self.subscriber = rospy.Subscriber("White", Float64, self.receive_white)
+        self.yellowPercent, self.whitePercent = 0, 0
 
 
 
@@ -42,9 +43,15 @@ class WheelControlNode(DTROS):
     def on_shutdown(self):
         stop = WheelsCmdStamped(vel_left=0, vel_right=0)
         self._publisher.publish(stop)
+    def receive_white(self, white):
+        self.whitePercent = white.data
 
-    def receive_data(self,percentageYellow,percentageWhite):
-        if percentageWhite > percentageYellow:
+    def receive_yellow(self, yellow):
+        self.yellowPercent = yellow.data
+
+    def analyzeData(self,):
+
+        if self.whitePercent > self.yellowPercent:
             DIRECTION_LEFT = -1
             DIRECTION_RIGHT = -1
         else:

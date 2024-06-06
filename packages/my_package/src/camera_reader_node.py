@@ -156,11 +156,13 @@ class CameraReaderNode(DTROS):
         # display frame
         redness,percentage = self.detect_red_line(self.remove_top_portion(image))
         yellow,percYellow = self.detect_yellow_line(self.remove_top_portion(image))
-        white,percWhite= self.detect_yellow_line(self.remove_top_portion(image))
+        white,percWhite= self.detect_white_line(self.remove_top_portion(image))
         self.publisherNode.publish(percentage)
         self.publisherNodeYellow.publish(percYellow)
         self.publisherNodeWhite.publish(percWhite)
-        print(percYellow)
+        print(percWhite)
+
+
 
         cv2.imshow(self._window, white)
         cv2.waitKey(1)
