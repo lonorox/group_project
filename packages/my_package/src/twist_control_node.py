@@ -32,7 +32,7 @@ class TwistControlNode(DTROS):
         self.continue_timer = rospy.Time.now()
         # construct publisher
         self._publisher = rospy.Publisher(twist_topic, Twist2DStamped, queue_size=1)
-        self.subscriber = rospy.Subscriber("Camera", Float64, self.receive_data)
+        self.subscriber = rospy.Subscriber("Red", Float64, self.receive_data)
 
     def check_timer(self, event):
         # Check if current time is past the stop time

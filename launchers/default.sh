@@ -14,8 +14,8 @@ dt-launchfile-init
 
 # launching app
 dt-exec rosrun my_package camera_reader_node.py
-dt-exec rosrun my_package twist_control_node.py
-# dt-exec rosrun my_package wheel_control_node.py
+# dt-exec rosrun my_package twist_control_node.py
+dt-exec rosrun my_package wheel_control_node.py
 
 
 # ----------------------------------------------------------------------------
