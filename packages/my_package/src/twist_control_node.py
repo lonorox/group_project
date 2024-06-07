@@ -9,8 +9,8 @@ from std_msgs.msg import Float64
 
 
 # Twist command for controlling the linear and angular velocity of the frame
-VELOCITY = 0.2  # linear vel    , in m/s    , forward (+)
-OMEGA = -0.65  # angular vel   , rad/s     , counter clock wise (+)
+VELOCITY = 0.3  # linear vel    , in m/s    , forward (+)
+OMEGA = 0  # angular vel   , rad/s     , counter clock wise (+)
 
 
 class TwistControlNode(DTROS):
@@ -26,6 +26,8 @@ class TwistControlNode(DTROS):
         self._omega = OMEGA
         self._stop = False
         self.stop_time = rospy.Time.now() + rospy.Duration(2)
+        self._turn_time = rospy.Time.now()
+        self._reset = rospy.Time.now()
         rospy.Timer(rospy.Duration(1), self.check_timer)
         self.continue_timer = rospy.Time.now()
         # construct publisher
@@ -43,11 +45,18 @@ class TwistControlNode(DTROS):
     def receive_data(self, percentage):
         # print(percentage.data)
         # print(self._v * 10)
+        # if self._v == 0.4:
+        #     self._omega = -3.5
+        # if rospy.Time.now() < self._turn_time:
+        #     self._omega = -2
         if percentage.data >= 1:
             self.on_shutdown()
     def run(self):
         # publish 10 messages every second (10 Hz)
-        rate = rospy.Rate(1)
+        rate = rospy.Rate(10)
+
+
+
         message = Twist2DStamped(v=self._v, omega=self._omega)
         while not rospy.is_shutdown():
             self._publisher.publish(message)
@@ -58,12 +67,15 @@ class TwistControlNode(DTROS):
         return
 
     def on_shutdown(self):
+
         if self._stop == True and rospy.Time.now() > self.stop_time:
-            self._v = 0.4 
-            self._omega = -3.5
+            self._v = 0.4
+            self._omega = -4
             self._stop = False
             self.stop_time = rospy.Time.now() + rospy.Duration(2)
             self.continue_timer = rospy.Time.now() + rospy.Duration(1)
+            self._turn_time = rospy.Time.now() + rospy.Duration(2)
+            self._reset = rospy.Time.now() + rospy.Duration(2)
             print("stopped")
 
         else:
